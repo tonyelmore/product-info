@@ -55,7 +55,8 @@ function select_product () {
     pivotal_single_sign-on_service \
     twistlock \
     p-ipsec-addon \
-    p-clamav-addon)
+    p-clamav-addon \
+    wavefront-nozzle)
 
   for index in ${!PIVNET_PRODUCTS[@]}; do
     printf "%4d: %s\n" $index ${PIVNET_PRODUCTS[$index]}
@@ -112,8 +113,15 @@ function select_product_file () {
 
   PRODUCT_DOWNLOAD_S3_FILENAME=$(echo -e "om download-product --pivnet-api-token "'$PIVNET_TOKEN'" --pivnet-product-slug $PRODUCT --product-version $PRODUCT_VERSION --file-glob $PRODUCT_FILE --blobstore-bucket=anyvalue --output-directory ./")
 
-  DEPENDENCIES=$(echo -e "curl -s https://network.tanzu.vmware.com/api/v2/products/p-spring-cloud-services/releases/309011/dependencies | jq '.dependencies[].release | .product.slug + \" \" + .version'")
-  STEMCELL_DEPENDENCIES=$(echo -e "curl -s https://network.tanzu.vmware.com/api/v2/products/p-spring-cloud-services/releases/309011/dependencies | jq '.dependencies[] | select(.release.product.slug | startswith(\"stemcell\")) | .release.product.slug + \" \" + .release.version'")
+  DEPENDENCIES=$(echo -e "curl -s https://network.tanzu.vmware.com/api/v2/products/$PRODUCT/releases/$PRODUCT_ID/dependencies \
+| jq '.dependencies[].release \
+| .product.slug + \" \" + .version'")
+  
+  STEMCELL_DEPENDENCIES=$(echo -e "curl -s https://network.tanzu.vmware.com/api/v2/products/$PRODUCT/releases/$PRODUCT_ID/dependencies \
+| jq '.dependencies[] | \
+select(.release.product.slug | \
+startswith(\"stemcell\")) | \
+.release.product.slug + \" \" + .release.version'")
 
   curlit api/v2/products/$PRODUCT/releases | jq -r '.releases[] | select(.version == '\"$PRODUCT_VERSION\"') '
 
