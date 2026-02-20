@@ -39,9 +39,12 @@ function select_product () {
     p-concourse \
     platform-automation \
     elastic-runtime \
+    tanzu-hub \
     pas-windows \
+    vmware-nsx-t \
     p-isolation-segment \
     pivotal-mysql \
+    pcf-app-autoscaler \
     p-rabbitmq \
     vmware-postgres-for-tas \
     p-redis \
@@ -52,11 +55,20 @@ function select_product () {
     credhub-service-broker \
     p-metric-store \
     apm \
+    p-appdynamics \
     pivotal_single_sign-on_service \
     twistlock \
     p-ipsec-addon \
     p-clamav-addon \
-    wavefront-nozzle)
+    p-bosh-backup-and-restore \
+    wavefront-nozzle \
+    splunk-nozzle \
+    java-buildpack \
+    python-buildpack \
+    tanzu-python-buildpack \
+    dotnet-core-buildpack \
+    nodejs-buildpack \
+    staticfile-buildpack)
 
   for index in ${!PIVNET_PRODUCTS[@]}; do
     printf "%4d: %s\n" $index ${PIVNET_PRODUCTS[$index]}
@@ -89,6 +101,10 @@ function select_product_version () {
 function select_product_file () {
 
   select_product_version
+
+  echo "PRODUCT: $PRODUCT"
+  echo "PRODUCT_VERSION: $PRODUCT_VERSION"
+
   PRODUCT_METADATA=$(curlit api/v2/products/$PRODUCT/releases | jq -r '.releases[] | select(.version == '\"$PRODUCT_VERSION\"') | "\(.description)|\(.became_ga_at)|\(.release_date)|\(.end_of_support_date)|\(.release_notes_url)|\(.id)"')
   
   PRODUCT_DESCRIPTION=$(echo $PRODUCT_METADATA | cut -d '|' -f1)
@@ -97,6 +113,7 @@ function select_product_file () {
   PRODUCT_EOGS_DATE=$(echo $PRODUCT_METADATA | cut -d '|' -f4)
   PRODUCT_RELEASE_NOTES=$(echo $PRODUCT_METADATA | cut -d '|' -f5)
   PRODUCT_ID=$(echo $PRODUCT_METADATA | cut -d '|' -f6)
+  echo "PRODUCT_ID: $PRODUCT_ID"
   FILES=$(curlit api/v2/products/$PRODUCT/releases/$PRODUCT_ID/product_files | jq -r '.product_files[].aws_object_key' | cut -d '/' -f2)
 
   declare -a PRODUCT_FILES=(${FILES})
